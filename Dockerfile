@@ -20,7 +20,7 @@ FROM eclipse-temurin:21-jdk-jammy
 
 WORKDIR /app
 
-EXPOSE 8080
+EXPOSE 8081
 
 COPY --from=build /app/build/libs/*.jar app.jar
 
