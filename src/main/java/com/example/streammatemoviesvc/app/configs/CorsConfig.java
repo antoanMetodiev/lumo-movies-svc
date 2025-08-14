@@ -10,7 +10,7 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")  // Позволява всички пътища
-                .allowedOrigins("https://glad-candida-lumo-user-svc-ee901669.koyeb.app", "http://localhost:8080")  // Разрешава само даден домейн
+                .allowedOrigins("https://lumo-api-gateway.onrender.com", "http://localhost:8080")  // Разрешава само даден домейн
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")  // Разрешава само определени методи
                 .allowedHeaders("*");  // Позволява всички хедъри
     }
