@@ -80,9 +80,7 @@ public class MovieController {
 
     @GetMapping("/get-movie-details")
     public Movie getConcreteMovieDetails(@RequestParam String id) {
-        Movie movie = this.movieService.getConcreteMovieDetails(UUID.fromString(id));
-        System.out.println();
-        return movie;
+        return this.movieService.getConcreteMovieDetails(UUID.fromString(id));
     }
 
     @GetMapping("/get-next-thirty-movies")
@@ -103,6 +101,7 @@ public class MovieController {
 
     @PostMapping("/search-movies")
     public void searchMovies(@RequestBody String title) throws IOException, InterruptedException {
+        System.out.println("====>>> Търся Филми...!!!");
         this.movieService.searchForMovies(title);
     }
 
