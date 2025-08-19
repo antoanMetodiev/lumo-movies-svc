@@ -23,6 +23,9 @@ public class MovieComment {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Version
+    private Long version;
+
     @Column(nullable = false, name = "comment_text")
     private String commentText;
 

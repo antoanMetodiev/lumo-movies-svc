@@ -21,6 +21,9 @@ public class MovieImage {
     @GeneratedValue
     private UUID id;
 
+    @Version
+    private Long version;
+
     @Column(name = "image_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private ImageType imageType;
