@@ -35,7 +35,7 @@ public class Movie extends CinemaRecord {
     )
     private List<Actor> castList = new ArrayList<>();
 
-    @Column(name = "video_url", nullable = false)
+    @Column(name = "video_url", nullable = false, unique = true)
     private String videoURL;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)

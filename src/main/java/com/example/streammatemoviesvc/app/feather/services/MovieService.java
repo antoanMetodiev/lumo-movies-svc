@@ -79,7 +79,7 @@ public class MovieService {
                         (UUID) obj[0],
                         (String) obj[1],  // title
                         (String) obj[2],  // posterImgURL
-                        (String) obj[3]   // releaseDate
+                        (String) obj[3]  // releaseDate
                 )
         ).toList();
 
@@ -103,8 +103,8 @@ public class MovieService {
     }
 
     public List<CinemaRecordResponse> getNextTwentyMoviesByGenre(String genre, Pageable pageable) {
-        int size = pageable.getPageSize();  // Получаваме размера на страницата (напр. 20)
-        int offset = pageable.getPageNumber() * size;  // Пресмятаме OFFSET (page * size)
+        int size = pageable.getPageSize();
+        int offset = pageable.getPageNumber() * size;
 
         List<Object[]> moviesByGenres = movieRepository.findByGenreNextTwentyMovies(genre, size, offset);
         List<CinemaRecordResponse> dtos = moviesByGenres.stream().map(obj ->
@@ -192,10 +192,9 @@ public class MovieService {
         this.movieRepository.save(movie);
     }
 
-    @Async
-    public CompletableFuture<List<MovieImage>> extractDetailsImages(JsonArray backdropsJsonAr, ImageType imageType, int limit) {
+    public List<MovieImage> extractDetailsImages(JsonArray backdropsJsonAr, ImageType imageType, int limit) {
         if (backdropsJsonAr == null || imageType == null) {
-            return CompletableFuture.completedFuture(new ArrayList<>());
+            return new ArrayList<>();
         }
 
         List<MovieImage> backdropImages = new ArrayList<>();
@@ -213,84 +212,77 @@ public class MovieService {
             if (count++ == limit) break;
         }
 
-        return CompletableFuture.completedFuture(backdropImages);
+        return backdropImages;
     }
 
-    @Async
-    public CompletableFuture<Void> searchForMovies(String movieName) {
-        if (movieName.trim().isEmpty()) return new CompletableFuture<Void>();
+    @Transactional
+    public void searchForMovies(String movieName) {
+        if (movieName.trim().isEmpty()) return;
 
-        CompletableFuture.supplyAsync(() -> {
-            try {
-                String encodedMovieName = URLEncoder.encode(movieName, "UTF-8");
-                String searchQuery = TMDB_BASE_URL + "/3/search/movie?api_key=" + TMDB_API_KEY + "&query=" + encodedMovieName;
+        try {
+//            String encodedMovieName = movieName;
+            String searchQuery = TMDB_BASE_URL + "/3/search/movie?api_key=" + TMDB_API_KEY + "&query=" + movieName;
 
-                HttpRequest request = HttpRequest.newBuilder().uri(URI.create(searchQuery)).build();
-                HttpResponse<String> response = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(searchQuery)).build();
+            HttpResponse<String> response = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-                if (response.statusCode() == 200) {
-                    JsonObject jsonObject = new Gson().fromJson(response.body(), JsonObject.class);
-                    JsonArray results = jsonObject.get("results").getAsJsonArray();
+            if (response.statusCode() == 200) {
+                JsonObject jsonObject = new Gson().fromJson(response.body(), JsonObject.class);
+                JsonArray results = jsonObject.get("results").getAsJsonArray();
 
-                    for (JsonElement currentMovie : results) {
+                for (JsonElement currentMovie : results) {
 
-                        jsonObject = currentMovie.getAsJsonObject();
-                        Movie movie = new Movie();
+                    jsonObject = currentMovie.getAsJsonObject();
+                    Movie movie = new Movie();
 
-                        String movieId = UtilMethods.getJsonValue(jsonObject, "id");
-                        String title = UtilMethods.getJsonValue(jsonObject, "title");
-                        String description = UtilMethods.getJsonValue(jsonObject, "overview");
-                        String releaseDate = UtilMethods.getJsonValue(jsonObject, "release_date");
-                        String backgroundIMG = UtilMethods.getJsonValue(jsonObject, "backdrop_path");
-                        String posterIMG = UtilMethods.getJsonValue(jsonObject, "poster_path");
-                        String movieRating = UtilMethods.getJsonValue(jsonObject, "vote_average");
+                    String movieId = UtilMethods.getJsonValue(jsonObject, "id");
+                    String title = UtilMethods.getJsonValue(jsonObject, "title");
+                    String description = UtilMethods.getJsonValue(jsonObject, "overview");
+                    String releaseDate = UtilMethods.getJsonValue(jsonObject, "release_date");
+                    String backgroundIMG = UtilMethods.getJsonValue(jsonObject, "backdrop_path");
+                    String posterIMG = UtilMethods.getJsonValue(jsonObject, "poster_path");
+                    String movieRating = UtilMethods.getJsonValue(jsonObject, "vote_average");
 
-                        // Checks:
-                        if (posterIMG.trim().isEmpty()) continue;
-                        if (releaseDate.trim().isEmpty()) continue;
-                        if (LocalDate.parse(releaseDate).isAfter(LocalDate.now())) continue;
-                        if (LocalDate.parse(releaseDate).getYear() < 2000) continue;
-                        if (movieRating.equals("0.0")) continue;
+                    // Checks:
+                    if (posterIMG.trim().isEmpty()) continue;
+                    if (releaseDate.trim().isEmpty()) continue;
+                    if (LocalDate.parse(releaseDate).isAfter(LocalDate.now())) continue;
+                    if (LocalDate.parse(releaseDate).getYear() < 2000) continue;
+                    if (movieRating.equals("0.0")) continue;
 
-                        String VidURL = "https://vidsrc.net/embed/movie/" + movieId;
-                        String castURL = TMDB_BASE_URL + "/3/movie/" + movieId + "/credits" + "?api_key=" + TMDB_API_KEY;
+                    String VidURL = "https://vidsrc.net/embed/movie/" + movieId;
+                    String castURL = TMDB_BASE_URL + "/3/movie/" + movieId + "/credits" + "?api_key=" + TMDB_API_KEY;
 
-                        UtilMethods utilMethods = new UtilMethods();
+                    UtilMethods utilMethods = new UtilMethods();
 
-                        // Стартираме асинхронни операции:
-                        CompletableFuture<List<Actor>> asyncActors = utilMethods.extractActors(
-                                castURL, this.httpClient, TMDB_BASE_URL, TMDB_API_KEY, asyncExecutor);
-                        CompletableFuture<Boolean> extractedImages = extractImagesAsync(movieId, movie);
-                        CompletableFuture<Boolean> extractGenresAndTaglineAsync = extractGenresAndTaglineAsync(movieId, encodedMovieName, movie);
+                    // Стартираме асинхронни операции:
+                    CompletableFuture<List<Actor>> asyncActors = utilMethods.extractActors(
+                            castURL, this.httpClient, TMDB_BASE_URL, TMDB_API_KEY, asyncExecutor);
+                    CompletableFuture<Boolean> extractedImages = extractImagesAsync(movieId, movie);
+                    CompletableFuture<Boolean> extractGenresAndTaglineAsync = extractGenresAndTaglineAsync(movieId, movieName, movie);
 
-                        // Изчакваме резултатите
-                        List<Actor> actors = asyncActors.get();
-                        addAllCast(actors, movie);
-                        if (actors.isEmpty()) continue;
-                        if (!extractedImages.get()) continue;
-                        if (!extractGenresAndTaglineAsync.get()) continue;
+                    // Изчакваме резултатите
+                    List<Actor> actors = asyncActors.get();
+                    addAllCast(actors, movie);
+                    if (actors.isEmpty()) continue;
+                    if (!extractedImages.get()) continue;
+                    if (!extractGenresAndTaglineAsync.get()) continue;
 
-                        // Запазвам крайният обект:
-                        movie.setVideoURL(VidURL).setSearchTag(movieName).setTitle(title).setDescription(description)
-                                .setReleaseDate(releaseDate).setBackgroundImg_URL(backgroundIMG)
-                                .setPosterImgURL(posterIMG).setTmdbRating(movieRating)
-                                .setCreatedAt(Instant.now());
+                    // Запазвам крайният обект:
+                    movie.setVideoURL(VidURL).setSearchTag(movieName).setTitle(title).setDescription(description)
+                            .setReleaseDate(releaseDate).setBackgroundImg_URL(backgroundIMG)
+                            .setPosterImgURL(posterIMG).setTmdbRating(movieRating)
+                            .setCreatedAt(Instant.now());
 
-                        saveMovie(title, posterIMG, movie);
-                    }
+                    saveMovie(VidURL, movie);
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println(e.getMessage());
             }
-
-            return null;
-        }, asyncExecutor);
-
-        return new CompletableFuture<Void>();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+        }
     }
 
-    @Async
     public CompletableFuture<Boolean> extractGenresAndTaglineAsync(String movieId, String encodedMovieName, Movie movie) {
         String searchQuery = TMDB_BASE_URL + "/3/movie/" + movieId + "?api_key=" + TMDB_API_KEY;
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(searchQuery)).build();
@@ -321,7 +313,6 @@ public class MovieService {
         }, asyncExecutor);
     }
 
-    @Async
     public CompletableFuture<Boolean> extractImagesAsync(String movieId, Movie movie) {
         String searchQuery = TMDB_BASE_URL + "/3/movie/" + movieId + "/images?api_key=" + TMDB_API_KEY;
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(searchQuery)).build();
@@ -335,14 +326,14 @@ public class MovieService {
                     JsonArray backdropsJsonAr = jsonObject.getAsJsonArray("backdrops");
                     JsonArray postersJsonAr = jsonObject.getAsJsonArray("posters");
 
-                    CompletableFuture<List<MovieImage>> allBackdropImgsFuture = extractDetailsImages(backdropsJsonAr, ImageType.BACKDROP, 29);
-                    CompletableFuture<List<MovieImage>> allPosterImages = extractDetailsImages(postersJsonAr, ImageType.POSTER, 8);
+                    List<MovieImage> allBackdropImgsFuture = extractDetailsImages(backdropsJsonAr, ImageType.BACKDROP, 29);
+                    List<MovieImage> allPosterImages = extractDetailsImages(postersJsonAr, ImageType.POSTER, 8);
 
                     List<MovieImage> allImages = new ArrayList<>();
-                    allImages.addAll(allBackdropImgsFuture.get());
-                    allImages.addAll(allPosterImages.get());
+                    allImages.addAll(allBackdropImgsFuture);
+                    allImages.addAll(allPosterImages);
 
-                    if (allImages.size() < 8) return false;
+                    if (allImages.size() < 4) return false;
                     movie.addAllImages(allImages);
                 }
 
@@ -354,15 +345,14 @@ public class MovieService {
         }, asyncExecutor);
     }
 
-    public void saveMovie(String cinemaRecTitle, String cinemaRecPosterImage, Movie movie) {
+    public void saveMovie(String videoURL, Movie movie) {
         transactionTemplate.execute(status -> {
-            Optional<Movie> cinemaRecResponse = this.movieRepository.findByTitleAndPosterImgURL(cinemaRecTitle, cinemaRecPosterImage);
+            Optional<Movie> cinemaRecResponse = this.movieRepository.findByVideoURL(videoURL);
             if (cinemaRecResponse.isEmpty()) {
                 // "Присвояваме" актьорите към текущата сесия
                 List<Actor> managedActors = new ArrayList<>();
                 for (Actor actor : movie.getCastList()) {
                     if (actor.getId() != null) {
-                        // Ако актьорът вече е в базата, зареждаме го отново
                         Actor managedActor = this.actorRepository.findById(actor.getId()).orElse(actor);
                         managedActors.add(managedActor);
                     } else {

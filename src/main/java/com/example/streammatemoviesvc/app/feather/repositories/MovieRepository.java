@@ -42,4 +42,6 @@ public interface MovieRepository extends JpaRepository<Movie, UUID> {
             nativeQuery = true)
     List<Object[]> getNext10Comments(@Param("offset") int offset,
                                      @Param("currentCinemaRecordId") UUID currentCinemaRecordId);
+
+    Optional<Movie> findByVideoURL(String videoURL);
 }
