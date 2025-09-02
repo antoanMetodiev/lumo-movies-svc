@@ -284,6 +284,7 @@ public class MovieService {
         }
     }
 
+    @Async
     public CompletableFuture<Boolean> extractGenresAndTaglineAsync(String movieId, String encodedMovieName, Movie movie) {
         String searchQuery = TMDB_BASE_URL + "/3/movie/" + movieId + "?api_key=" + TMDB_API_KEY;
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(searchQuery)).build();
@@ -314,6 +315,7 @@ public class MovieService {
         }, asyncExecutor);
     }
 
+    @Async
     public CompletableFuture<Boolean> extractImagesAsync(String movieId, Movie movie) {
         String searchQuery = TMDB_BASE_URL + "/3/movie/" + movieId + "/images?api_key=" + TMDB_API_KEY;
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(searchQuery)).build();
