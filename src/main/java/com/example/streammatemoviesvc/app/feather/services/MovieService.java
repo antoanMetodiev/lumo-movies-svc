@@ -29,6 +29,7 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -220,8 +221,8 @@ public class MovieService {
         if (movieName.trim().isEmpty()) return;
 
         try {
-//            String encodedMovieName = movieName;
-            String searchQuery = TMDB_BASE_URL + "/3/search/movie?api_key=" + TMDB_API_KEY + "&query=" + movieName;
+            String encodedMovieName = URLEncoder.encode(movieName, StandardCharsets.UTF_8);
+            String searchQuery = TMDB_BASE_URL + "/3/search/movie?api_key=" + TMDB_API_KEY + "&query=" + encodedMovieName;
 
             HttpRequest request = HttpRequest.newBuilder().uri(URI.create(searchQuery)).build();
             HttpResponse<String> response = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
