@@ -80,7 +80,8 @@ public class MovieService {
                         (UUID) obj[0],
                         (String) obj[1],  // title
                         (String) obj[2],  // posterImgURL
-                        (String) obj[3]  // releaseDate
+                        (String) obj[3],  // releaseDate
+                        (String) obj[4]
                 )
         ).toList();
 
@@ -91,8 +92,9 @@ public class MovieService {
         return this.movieRepository.count();
     }
 
-    public Movie getConcreteMovieDetails(UUID id) {
-        return this.movieRepository.findById(id).orElseThrow();
+    public Movie getConcreteMovieDetails(String videoURL) {
+        videoURL = "https://vidsrc.net/embed/movie/" + videoURL;
+        return this.movieRepository.findByVideoURL(videoURL).orElseThrow();
     }
 
     public List<Movie> getMoviesByTitle(String title) {
@@ -113,7 +115,8 @@ public class MovieService {
                         (UUID) obj[0],
                         (String) obj[1],  // title
                         (String) obj[2],  // posterImgURL
-                        (String) obj[3]   // releaseDate
+                        (String) obj[3],   // releaseDate
+                        (String) obj[4]
                 )
         ).toList();
 
@@ -216,7 +219,8 @@ public class MovieService {
         return backdropImages;
     }
 
-    @Transactional
+    // Нека създава нова транзакция, а не да взима съществуващата:
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
     public void searchForMovies(String movieName) {
         if (movieName.trim().isEmpty()) return;
 

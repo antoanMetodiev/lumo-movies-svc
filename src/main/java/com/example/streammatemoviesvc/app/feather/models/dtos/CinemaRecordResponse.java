@@ -16,4 +16,5 @@ public class CinemaRecordResponse {
     private String title;
     private String posterImgURL;
     private String releaseDate;
+    private String videoURL;
 }

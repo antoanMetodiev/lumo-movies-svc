@@ -79,8 +79,8 @@ public class MovieController {
 
 
     @GetMapping("/get-movie-details")
-    public Movie getConcreteMovieDetails(@RequestParam String id) {
-        return this.movieService.getConcreteMovieDetails(UUID.fromString(id));
+    public Movie getConcreteMovieDetails(@RequestParam String movieId) {
+        return this.movieService.getConcreteMovieDetails(movieId);
     }
 
     @GetMapping("/get-next-thirty-movies")

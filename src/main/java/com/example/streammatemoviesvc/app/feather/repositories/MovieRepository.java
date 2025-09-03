@@ -1,7 +1,6 @@
 package com.example.streammatemoviesvc.app.feather.repositories;
 
 import com.example.streammatemoviesvc.app.feather.models.entities.Movie;
-import com.example.streammatemoviesvc.app.feather.models.entities.MovieComment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,10 +22,10 @@ public interface MovieRepository extends JpaRepository<Movie, UUID> {
             " OR LOWER(search_tag) LIKE LOWER(CONCAT('%', :movieName, '%'))", nativeQuery = true)
     List<Movie> findByTitleOrSearchTagContainingIgnoreCase(@Param("movieName") String movieName);
 
-    @Query(value = "SELECT id, title, poster_img_url, release_date FROM movies ORDER BY created_at DESC LIMIT :size OFFSET :offset", nativeQuery = true)
+    @Query(value = "SELECT id, title, poster_img_url, release_date, video_url FROM movies ORDER BY created_at DESC LIMIT :size OFFSET :offset", nativeQuery = true)
     List<Object[]> getThirthyMoviesRawData(@Param("size") int size, @Param("offset") int offset);
 
-    @Query(value = "SELECT id, title, poster_img_url, release_date FROM movies WHERE LOWER(genres) LIKE LOWER(CONCAT('%', :genre, '%')) ORDER BY created_at DESC LIMIT :size OFFSET :offset", nativeQuery = true)
+    @Query(value = "SELECT id, title, poster_img_url, release_date, video_url FROM movies WHERE LOWER(genres) LIKE LOWER(CONCAT('%', :genre, '%')) ORDER BY created_at DESC LIMIT :size OFFSET :offset", nativeQuery = true)
     List<Object[]> findByGenreNextTwentyMovies(@Param("genre") String genre, @Param("size") int size, @Param("offset") int offset);
 
     @Query(value = "SELECT COUNT(*) FROM movies WHERE LOWER(genres) LIKE LOWER(CONCAT('%', :genre, '%'))", nativeQuery = true)
@@ -43,5 +42,6 @@ public interface MovieRepository extends JpaRepository<Movie, UUID> {
     List<Object[]> getNext10Comments(@Param("offset") int offset,
                                      @Param("currentCinemaRecordId") UUID currentCinemaRecordId);
 
-    Optional<Movie> findByVideoURL(String videoURL);
+    @Query(value = "SELECT * FROM movies WHERE video_url = :videoURL", nativeQuery = true)
+    Optional<Movie> findByVideoURL(@Param("videoURL") String videoURL);
 }

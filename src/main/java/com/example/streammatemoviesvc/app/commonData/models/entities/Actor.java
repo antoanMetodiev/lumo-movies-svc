@@ -23,7 +23,7 @@ public class Actor {
     @GeneratedValue
     private UUID id;
 
-    @Column(name = "image_url")
+    @Column(name = "image_url", unique = true)
     private String imageURL;
 
     @Column(columnDefinition = "TEXT")
