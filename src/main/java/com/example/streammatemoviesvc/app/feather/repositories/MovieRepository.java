@@ -1,5 +1,6 @@
 package com.example.streammatemoviesvc.app.feather.repositories;
 
+import com.example.streammatemoviesvc.app.feather.models.dtos.ActorLatestMovies;
 import com.example.streammatemoviesvc.app.feather.models.entities.Movie;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,12 +15,10 @@ import java.util.UUID;
 public interface MovieRepository extends JpaRepository<Movie, UUID> {
     Optional<Movie> findByTitleAndPosterImgURL(String cinemaRecTitle, String cinemaRecPosterImage);
 
-    @Query(value = "SELECT count(*) FROM movies WHERE LOWER(title) LIKE LOWER(CONCAT('%', :movieName, '%'))" +
-            " OR LOWER(search_tag) LIKE LOWER(CONCAT('%', :movieName, '%'))", nativeQuery = true)
+    @Query(value = "SELECT count(*) FROM movies WHERE title ILIKE CONCAT('%', :movieName, '%')", nativeQuery = true)
     long findMoviesCountByTitleOrSearchTagContainingIgnoreCase(@Param("movieName") String movieName);
 
-    @Query(value = "SELECT * FROM movies WHERE LOWER(title) LIKE LOWER(CONCAT('%', :movieName, '%'))" +
-            " OR LOWER(search_tag) LIKE LOWER(CONCAT('%', :movieName, '%'))", nativeQuery = true)
+    @Query(value = "SELECT * FROM movies WHERE title ILIKE CONCAT('%', :movieName, '%')", nativeQuery = true)
     List<Movie> findByTitleOrSearchTagContainingIgnoreCase(@Param("movieName") String movieName);
 
     @Query(value = "SELECT id, title, poster_img_url, release_date, video_url FROM movies ORDER BY created_at DESC LIMIT :size OFFSET :offset", nativeQuery = true)
@@ -44,4 +43,16 @@ public interface MovieRepository extends JpaRepository<Movie, UUID> {
 
     @Query(value = "SELECT * FROM movies WHERE video_url = :videoURL", nativeQuery = true)
     Optional<Movie> findByVideoURL(@Param("videoURL") String videoURL);
+
+    @Query(value = "SELECT \n" +
+            "m.video_url AS videoURL,\n" +
+            "m.poster_img_url AS posterURL,\n" +
+            "m.title AS title,\n" +
+            "m.tmdb_rating AS tmdbRating,\n" +
+            "m.release_date AS releaseDate\n" +
+            "FROM movies m\n" +
+            "JOIN movies_actors ma ON ma.movie_id = m.id\n" +
+            "JOIN actors a ON ma.actor_id = a.id\n" +
+            "WHERE a.imdb_id = :imdb_id;", nativeQuery = true)
+    List<Object[]> findActorLatestMovies(@Param("imdb_id") String imdb_id);
 }

@@ -14,6 +14,6 @@ import java.util.UUID;
 public interface TrendingMoviesRepository extends JpaRepository<TrendingMovie, UUID> {
     Optional<TrendingMovie> findByMovieId(String movieId);
 
-    @Query(value = "SELECT * FROM trending_movies LIMIT 6;", nativeQuery = true)
+    @Query(value = "SELECT * FROM trending_movies LIMIT 9;", nativeQuery = true)
     List<TrendingMovie> get6TrendingMovie();
 }

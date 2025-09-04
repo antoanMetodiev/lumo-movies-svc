@@ -1,5 +1,6 @@
 package com.example.streammatemoviesvc.app.feather.controllers;
 
+import com.example.streammatemoviesvc.app.feather.models.dtos.ActorLatestMovies;
 import com.example.streammatemoviesvc.app.feather.models.dtos.CinemaRecordResponse;
 import com.example.streammatemoviesvc.app.feather.models.entities.Movie;
 import com.example.streammatemoviesvc.app.feather.models.entities.MovieComment;
@@ -24,6 +25,17 @@ public class MovieController {
     public MovieController(MovieService movieService) {
         this.movieService = movieService;
     }
+
+
+    @GetMapping("/actor/latest-movies/{imdb_id}")
+    public List<ActorLatestMovies> getActorLatestMovies(@PathVariable(name = "imdb_id") String imdb_id) {
+        List<ActorLatestMovies> response = movieService.getActorLatestMovies(imdb_id);
+
+
+        System.out.println();
+        return response;
+    }
+
 
     @DeleteMapping("/delete-movie-comment")
     public void deleteMovieComment(@RequestParam String commentId,

@@ -4,6 +4,7 @@ import com.example.streammatemoviesvc.app.commonData.models.entities.Actor;
 import com.example.streammatemoviesvc.app.commonData.models.enums.ImageType;
 import com.example.streammatemoviesvc.app.commonData.repositories.ActorRepository;
 import com.example.streammatemoviesvc.app.commonData.utils.UtilMethods;
+import com.example.streammatemoviesvc.app.feather.models.dtos.ActorLatestMovies;
 import com.example.streammatemoviesvc.app.feather.models.dtos.CinemaRecordResponse;
 import com.example.streammatemoviesvc.app.feather.models.entities.Movie;
 import com.example.streammatemoviesvc.app.feather.models.entities.MovieComment;
@@ -401,5 +402,28 @@ public class MovieService {
 
             return true;
         });
+    }
+
+//    "m.video_url AS videoURL,\n" +
+//            "m.poster_img_url AS posterURL,\n" +
+//            "m.title AS title,\n" +
+//            "m.tmdb_rating AS tmdbRating,\n" +
+//            "m.release_date AS releaseDate\n" +
+
+    public List<ActorLatestMovies> getActorLatestMovies(final String imdb_id) {
+        List<Object[]> responseData = movieRepository.findActorLatestMovies(imdb_id);
+        List<ActorLatestMovies> actorLatestMovies = new ArrayList<>();
+        responseData.forEach(responseMovie -> {
+            actorLatestMovies.add(ActorLatestMovies.builder()
+                    .videoURL(responseMovie[0].toString())
+                    .posterURL(responseMovie[1].toString())
+                    .title(responseMovie[2].toString())
+                    .tmdbRating(responseMovie[3].toString())
+                    .releaseDate(responseMovie[4].toString())
+                    .TYPE("MOVIE")
+                    .build());
+        });
+
+        return actorLatestMovies;
     }
 }
