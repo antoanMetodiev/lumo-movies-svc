@@ -18,8 +18,8 @@ public interface MovieRepository extends JpaRepository<Movie, UUID> {
     @Query(value = "SELECT count(*) FROM movies WHERE title ILIKE CONCAT('%', :movieName, '%')", nativeQuery = true)
     long findMoviesCountByTitleOrSearchTagContainingIgnoreCase(@Param("movieName") String movieName);
 
-    @Query(value = "SELECT * FROM movies WHERE title ILIKE CONCAT('%', :movieName, '%')", nativeQuery = true)
-    List<Movie> findByTitleOrSearchTagContainingIgnoreCase(@Param("movieName") String movieName);
+    @Query(value = "SELECT id, title, poster_img_url, release_date, video_url FROM movies WHERE title ILIKE CONCAT('%', :movieName, '%')", nativeQuery = true)
+    List<Object[]> findByTitleOrSearchTagContainingIgnoreCase(@Param("movieName") String movieName);
 
     @Query(value = "SELECT id, title, poster_img_url, release_date, video_url FROM movies ORDER BY created_at DESC LIMIT :size OFFSET :offset", nativeQuery = true)
     List<Object[]> getThirthyMoviesRawData(@Param("size") int size, @Param("offset") int offset);
@@ -55,4 +55,8 @@ public interface MovieRepository extends JpaRepository<Movie, UUID> {
             "JOIN actors a ON ma.actor_id = a.id\n" +
             "WHERE a.imdb_id = :imdb_id;", nativeQuery = true)
     List<Object[]> findActorLatestMovies(@Param("imdb_id") String imdb_id);
+
+    // SELECT * FROM movies WHERE trailer_urls IS NOT NULL LIMIT 10;
+    @Query(value = "SELECT * FROM movies WHERE video_urls IS NULL", nativeQuery = true)
+    List<Movie> getMoviesWithoutVideoUrls();
 }

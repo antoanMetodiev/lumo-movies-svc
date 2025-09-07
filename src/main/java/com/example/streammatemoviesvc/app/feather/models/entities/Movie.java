@@ -2,11 +2,13 @@ package com.example.streammatemoviesvc.app.feather.models.entities;
 
 import com.example.streammatemoviesvc.app.commonData.models.CinemaRecord;
 import com.example.streammatemoviesvc.app.commonData.models.entities.Actor;
+import com.example.streammatemoviesvc.app.utils.StringListConverter;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.hibernate.annotations.Array;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +47,14 @@ public class Movie extends CinemaRecord {
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<MovieComment> movieComments = new ArrayList<>();
+
+    @Column(name = "trailer_urls", columnDefinition = "TEXT")
+    @Convert(converter = StringListConverter.class)
+    private List<String> trailerURLs = new ArrayList<>();
+
+    @Column(name = "video_urls", columnDefinition = "TEXT")
+    @Convert(converter = StringListConverter.class)
+    private List<String> videoURLs = new ArrayList<>();
 
     public void addAllImages(List<MovieImage> allImages) {
         allImages.forEach(image -> image.setMovie(this));

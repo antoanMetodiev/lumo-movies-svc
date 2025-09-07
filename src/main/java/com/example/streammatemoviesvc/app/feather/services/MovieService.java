@@ -98,8 +98,20 @@ public class MovieService {
         return this.movieRepository.findByVideoURL(videoURL).orElseThrow();
     }
 
-    public List<Movie> getMoviesByTitle(String title) {
-        return this.movieRepository.findByTitleOrSearchTagContainingIgnoreCase(title);
+    public List<CinemaRecordResponse> getMoviesByTitle(String title) {
+        List<Object[]> response = this.movieRepository.findByTitleOrSearchTagContainingIgnoreCase(title);
+
+        List<CinemaRecordResponse> dtos = response.stream().map(obj ->
+                new CinemaRecordResponse(
+                        (UUID) obj[0],
+                        (String) obj[1],  // title
+                        (String) obj[2],  // posterImgURL
+                        (String) obj[3],   // releaseDate
+                        (String) obj[4]
+                )
+        ).toList();
+
+        return dtos;
     }
 
     public long findMoviesCountByGenre(String genre) {
@@ -403,12 +415,6 @@ public class MovieService {
             return true;
         });
     }
-
-//    "m.video_url AS videoURL,\n" +
-//            "m.poster_img_url AS posterURL,\n" +
-//            "m.title AS title,\n" +
-//            "m.tmdb_rating AS tmdbRating,\n" +
-//            "m.release_date AS releaseDate\n" +
 
     public List<ActorLatestMovies> getActorLatestMovies(final String imdb_id) {
         List<Object[]> responseData = movieRepository.findActorLatestMovies(imdb_id);

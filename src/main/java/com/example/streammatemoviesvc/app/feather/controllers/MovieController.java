@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -26,16 +27,10 @@ public class MovieController {
         this.movieService = movieService;
     }
 
-
     @GetMapping("/actor/latest-movies/{imdb_id}")
     public List<ActorLatestMovies> getActorLatestMovies(@PathVariable(name = "imdb_id") String imdb_id) {
-        List<ActorLatestMovies> response = movieService.getActorLatestMovies(imdb_id);
-
-
-        System.out.println();
-        return response;
+        return movieService.getActorLatestMovies(imdb_id);
     }
-
 
     @DeleteMapping("/delete-movie-comment")
     public void deleteMovieComment(@RequestParam String commentId,
@@ -70,9 +65,8 @@ public class MovieController {
     }
 
     @GetMapping("/get-movies-by-title")
-    public List<Movie> getMoviesByTitle(@RequestParam String title) {
-        List<Movie> moviesByTitle = this.movieService.getMoviesByTitle(title);
-        return moviesByTitle;
+    public List<CinemaRecordResponse> getMoviesByTitle(@RequestParam String title) {
+        return this.movieService.getMoviesByTitle(title);
     }
 
     @GetMapping("/get-movies-count-by-genre")
@@ -85,14 +79,15 @@ public class MovieController {
                                                                  @RequestParam(defaultValue = "20") int size,
                                                                  @RequestParam String receivedGenre) {
 
-        Pageable pageable = PageRequest.of(page, size);  // Стандартен Pageable
-        return movieService.getNextTwentyMoviesByGenre(receivedGenre, pageable);  // Предаваме жанра и Pageable на сървиса
+        return movieService.getNextTwentyMoviesByGenre(receivedGenre, PageRequest.of(page, size));  // Предаваме жанра и Pageable на сървиса
     }
 
 
     @GetMapping("/get-movie-details")
     public Movie getConcreteMovieDetails(@RequestParam String movieId) {
-        return this.movieService.getConcreteMovieDetails(movieId);
+        Movie movie = this.movieService.getConcreteMovieDetails(movieId);
+        System.out.println();
+        return movie;
     }
 
     @GetMapping("/get-next-thirty-movies")
