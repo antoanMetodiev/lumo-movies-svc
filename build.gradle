@@ -80,6 +80,13 @@ configurations.configureEach {
     }
 }
 
+tasks.named('bootRun') {
+    jvmArgs = [
+            "-Djdk.virtualThreadScheduler.parallelism=8",
+            "-Djdk.virtualThreadScheduler.maxPoolSize=8"
+    ]
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }
