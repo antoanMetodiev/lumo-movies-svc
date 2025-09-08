@@ -392,8 +392,11 @@ public class MovieService {
             int count = 0;
 
             for (Actor actor : allCast) {
+
+                final String imdbId = actor.getImdbId();
+
                 Optional<Actor> existingActor = this.actorRepository
-                        .findByNameInRealLifeAndImageURL(actor.getNameInRealLife(), actor.getImageURL());
+                        .findByIMDB_ID(imdbId);
 
                 if (existingActor.isPresent()) {
                     actor = existingActor.get();

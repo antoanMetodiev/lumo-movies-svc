@@ -41,7 +41,7 @@ public class Actor {
     @Column(name = "youtube_channel")
     private String youtubeChannel;
 
-    @Column(name = "imdb_id")
+    @Column(name = "imdb_id", unique = true)
     private String imdbId;
 
     @Column
