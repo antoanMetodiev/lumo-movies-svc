@@ -392,7 +392,6 @@ public class MovieService {
             int count = 0;
 
             for (Actor actor : allCast) {
-
                 final String imdbId = actor.getImdbId();
 
                 Optional<Actor> existingActor = this.actorRepository

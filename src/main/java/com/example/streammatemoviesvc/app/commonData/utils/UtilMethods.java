@@ -90,6 +90,8 @@ public class UtilMethods {
                     String youtubeChannel = getExternalId(externalIds, "youtube_id");
                     String imdbId = getExternalId(externalIds, "imdb_id");
 
+                    if (imdbId == null || imdbId.trim().isEmpty()) return null;
+
                     return new Actor().setNameInRealLife(name).setImageURL(actorImage).setBiography(biography).setFacebookUsername(facebookUsername)
                             .setInstagramUsername(instagramUsername).setTwitterUsername(twitterUsername).setYoutubeChannel(youtubeChannel)
                             .setImdbId(imdbId).setBirthday(birthday).setKnownFor(knownFor).setPopularity(popularity).setPlaceOfBirth(placeOfBirth)
