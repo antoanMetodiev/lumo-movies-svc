@@ -27,36 +27,15 @@ public class MovieController {
         this.movieService = movieService;
     }
 
+    @GetMapping("/search-movies-matching-results/{searchTitle}")
+    public List<CinemaRecordResponse> searchMoviesMatchingResults(@PathVariable(value = "searchTitle") String searchTitle) {
+        List<CinemaRecordResponse> cinemaRecordResponses = movieService.searchMoviesMatchingResults(searchTitle);
+        return cinemaRecordResponses;
+    }
+
     @GetMapping("/actor/latest-movies/{imdb_id}")
     public List<ActorLatestMovies> getActorLatestMovies(@PathVariable(name = "imdb_id") String imdb_id) {
         return movieService.getActorLatestMovies(imdb_id);
-    }
-
-    @DeleteMapping("/delete-movie-comment")
-    public void deleteMovieComment(@RequestParam String commentId,
-                                   @RequestParam String movieId) {
-
-        this.movieService.deleteMovieComment(commentId, movieId);
-    }
-
-    @GetMapping("/get-next-10-movie-comments")
-    public List<MovieComment> getNext10Comments(@RequestParam int order,
-                                                @RequestParam String currentCinemaRecordId) {
-
-        return this.movieService.getNext10Comments(order, UUID.fromString(currentCinemaRecordId));
-    }
-
-    @PostMapping("/post-movie-comment")
-    public void postComment(@RequestParam String authorUsername,
-                            @RequestParam String authorFullName,
-                            @RequestParam String authorImgURL,
-                            @RequestParam String commentText,
-                            @RequestParam double rating,
-                            @RequestParam String createdAt,
-                            @RequestParam String authorId,
-                            @RequestParam String movieId) {
-
-        this.movieService.postComment(authorUsername, authorFullName, authorImgURL, commentText, rating, createdAt, authorId, movieId);
     }
 
     @GetMapping("/get-searched-movies-count")

@@ -434,4 +434,20 @@ public class MovieService {
 
         return actorLatestMovies;
     }
+
+    public List<CinemaRecordResponse> searchMoviesMatchingResults(String searchTitle) {
+        List<Object[]> response = movieRepository.searchMoviesMatchingResults(searchTitle);
+
+        List<CinemaRecordResponse> dtos = response.stream().map(obj ->
+                new CinemaRecordResponse(
+                        (UUID) obj[0],
+                        (String) obj[1],  // title
+                        (String) obj[2],  // posterImgURL
+                        (String) obj[3],   // releaseDate
+                        (String) obj[4]
+                )
+        ).toList();
+
+        return dtos;
+    }
 }

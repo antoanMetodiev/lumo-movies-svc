@@ -1,6 +1,5 @@
 package com.example.streammatemoviesvc.app.feather.repositories;
 
-import com.example.streammatemoviesvc.app.feather.models.dtos.ActorLatestMovies;
 import com.example.streammatemoviesvc.app.feather.models.entities.Movie;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,7 +12,6 @@ import java.util.UUID;
 
 @Repository
 public interface MovieRepository extends JpaRepository<Movie, UUID> {
-    Optional<Movie> findByTitleAndPosterImgURL(String cinemaRecTitle, String cinemaRecPosterImage);
 
     @Query(value = "SELECT count(*) FROM movies WHERE title ILIKE CONCAT('%', :movieName, '%')", nativeQuery = true)
     long findMoviesCountByTitleOrSearchTagContainingIgnoreCase(@Param("movieName") String movieName);
@@ -59,4 +57,7 @@ public interface MovieRepository extends JpaRepository<Movie, UUID> {
     // SELECT * FROM movies WHERE trailer_urls IS NOT NULL LIMIT 10;
     @Query(value = "SELECT * FROM movies WHERE video_urls IS NULL", nativeQuery = true)
     List<Movie> getMoviesWithoutVideoUrls();
+
+    @Query(value = "SELECT id, title, poster_img_url, release_date, video_url FROM movies WHERE title ILIKE CONCAT('%', :searchTitle, '%') LIMIT 5", nativeQuery = true)
+    List<Object[]> searchMoviesMatchingResults(@Param("searchTitle") String searchTitle);
 }
