@@ -94,7 +94,7 @@ public class MovieService {
     }
 
     public Movie getConcreteMovieDetails(String videoURL) {
-        videoURL = "https://vidsrc.net/embed/movie/" + videoURL;
+        videoURL = "https://vidsrc.icu/embed/movie/" + videoURL;
         return this.movieRepository.findByVideoURL(videoURL).orElseThrow();
     }
 
@@ -268,7 +268,7 @@ public class MovieService {
                     if (LocalDate.parse(releaseDate).getYear() < 2000) continue;
                     if (movieRating.equals("0.0")) continue;
 
-                    String VidURL = "https://vidsrc.net/embed/movie/" + movieId;
+                    String VidURL = "https://vidsrc.icu/embed/movie/" + movieId;
                     String castURL = TMDB_BASE_URL + "/3/movie/" + movieId + "/credits" + "?api_key=" + TMDB_API_KEY;
 
                     UtilMethods utilMethods = new UtilMethods();

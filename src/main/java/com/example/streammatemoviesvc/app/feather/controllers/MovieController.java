@@ -3,19 +3,16 @@ package com.example.streammatemoviesvc.app.feather.controllers;
 import com.example.streammatemoviesvc.app.feather.models.dtos.ActorLatestMovies;
 import com.example.streammatemoviesvc.app.feather.models.dtos.CinemaRecordResponse;
 import com.example.streammatemoviesvc.app.feather.models.entities.Movie;
-import com.example.streammatemoviesvc.app.feather.models.entities.MovieComment;
 import com.example.streammatemoviesvc.app.feather.services.MovieService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 public class MovieController {
