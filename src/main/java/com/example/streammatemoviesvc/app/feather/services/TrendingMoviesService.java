@@ -127,7 +127,7 @@ public class TrendingMoviesService {
             exception.printStackTrace();
         }
 
-        String videoURL = "https://vidsrc.net/embed/movie/" + movie.getMovieId();
+        String videoURL = "https://vidsrc.icu/embed/movie/" + movie.getMovieId();
         Optional<Movie> isContained = movieRepository.findByVideoURL(videoURL);
 
         if (isContained.isPresent()) {
@@ -225,5 +225,9 @@ public class TrendingMoviesService {
 
     public List<TrendingMovie> getTrendingMovies() {
         return trendingMoviesRepository.get6TrendingMovie();
+    }
+
+    public void removeTrendingMovies() {
+        trendingMoviesRepository.deleteAll();
     }
 }

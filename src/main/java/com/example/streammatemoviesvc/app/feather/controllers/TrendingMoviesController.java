@@ -5,6 +5,7 @@ import com.example.streammatemoviesvc.app.feather.models.entities.TrendingMovie;
 import com.example.streammatemoviesvc.app.feather.services.TrendingMoviesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,11 +22,24 @@ public class TrendingMoviesController {
         this.trendingMoviesService = trendingMoviesService;
     }
 
+    // Тук връщам ResponseEntity, понеже направо cron-job ще прави заявката към него (независима операция от API-GATEWAY-a)
+    @DeleteMapping("/remove-trending-movies")
+    public ResponseEntity<Void> removeTrendingMovies() {
+        try {
+            trendingMoviesService.removeTrendingMovies();
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+    }
+
     @GetMapping("/get-trending-movies")
     public List<TrendingMovie> getTrendingMovies() {
         return trendingMoviesService.getTrendingMovies();
     }
 
+    // Тук връщам ResponseEntity, понеже направо cron-job ще прави заявката към него (независима операция от API-GATEWAY-a)
     @PostMapping("/find-new-trending-movies")
     public ResponseEntity<Void> findNewTrendingMovies() {
 
