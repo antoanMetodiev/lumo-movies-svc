@@ -51,6 +51,7 @@ public class TrendingMoviesService {
 
     @Transactional
     public void generateTrendingMovies() throws IOException, InterruptedException {
+        removeTrendingMovies(); // this is first:
         final String URL = TMDB_BASE_URL + "/3/trending/movie/day?api_key=" + TMDB_API_KEY;
 
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(URL)).build();
