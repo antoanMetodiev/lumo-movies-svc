@@ -366,25 +366,23 @@ public class MovieService {
     }
 
     public void saveMovie(String videoURL, Movie movie) {
-        transactionTemplate.execute(status -> {
-            Optional<Movie> cinemaRecResponse = this.movieRepository.findByVideoURL(videoURL);
-            if (cinemaRecResponse.isEmpty()) {
-                // "Присвояваме" актьорите към текущата сесия
-                List<Actor> managedActors = new ArrayList<>();
-                for (Actor actor : movie.getCastList()) {
-                    if (actor.getId() != null) {
-                        Actor managedActor = this.actorRepository.findById(actor.getId()).orElse(actor);
-                        managedActors.add(managedActor);
-                    } else {
-                        // Ако няма ID, значи е нов – го запазваме, за да получим ID и управляван екземпляр
-                        managedActors.add(this.actorRepository.save(actor));
-                    }
+        Optional<Movie> cinemaRecResponse = this.movieRepository.findByVideoURL(videoURL);
+
+        if (cinemaRecResponse.isEmpty()) {
+            // "Присвояваме" актьорите към текущата сесия
+            List<Actor> managedActors = new ArrayList<>();
+            for (Actor actor : movie.getCastList()) {
+                if (actor.getId() != null) {
+                    Actor managedActor = this.actorRepository.findById(actor.getId()).orElse(actor);
+                    managedActors.add(managedActor);
+                } else {
+                    // Ако няма ID, значи е нов – го запазваме, за да получим ID и управляван екземпляр
+                    managedActors.add(this.actorRepository.save(actor));
                 }
-                movie.setCastList(managedActors);
-                this.movieRepository.save(movie);
             }
-            return null;
-        });
+            movie.setCastList(managedActors);
+            this.movieRepository.save(movie);
+        }
     }
 
     public void addAllCast(List<Actor> allCast, Movie movie) {
