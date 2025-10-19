@@ -386,34 +386,30 @@ public class MovieService {
     }
 
     public void addAllCast(List<Actor> allCast, Movie movie) {
-        transactionTemplate.execute(status -> {
-            int count = 0;
+        int count = 0;
 
-            for (Actor actor : allCast) {
-                final String imdbId = actor.getImdbId();
+        for (Actor actor : allCast) {
+            final String imdbId = actor.getImdbId();
 
-                Optional<Actor> existingActor = this.actorRepository
-                        .findByIMDB_ID(imdbId);
+            Optional<Actor> existingActor = this.actorRepository
+                    .findByIMDB_ID(imdbId);
 
-                if (existingActor.isPresent()) {
-                    actor = existingActor.get();
-                }
-
-                // Добавяме връзката между актьора и филма
-                if (!movie.getCastList().contains(actor)) {
-                    movie.getCastList().add(actor);
-                }
-
-                // Добавяме филма към списъка на актьора
-                if (!actor.getMoviesParticipations().contains(movie)) {
-                    actor.getMoviesParticipations().add(movie);
-                }
-
-                if (count++ == 20) return true;
+            if (existingActor.isPresent()) {
+                actor = existingActor.get();
             }
 
-            return true;
-        });
+            // Добавяме връзката между актьора и филма
+            if (!movie.getCastList().contains(actor)) {
+                movie.getCastList().add(actor);
+            }
+
+            // Добавяме филма към списъка на актьора
+            if (!actor.getMoviesParticipations().contains(movie)) {
+                actor.getMoviesParticipations().add(movie);
+            }
+
+            if (count++ == 20) return;
+        }
     }
 
     public List<ActorLatestMovies> getActorLatestMovies(final String imdb_id) {
