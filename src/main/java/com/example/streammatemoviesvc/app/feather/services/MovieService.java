@@ -233,7 +233,7 @@ public class MovieService {
     }
 
     // Нека създава нова транзакция, а не да взима съществуващата:
-    @Transactional(Transactional.TxType.REQUIRES_NEW)
+//    @Transactional(Transactional.TxType.REQUIRES_NEW)
     public void searchForMovies(String movieName) {
         if (movieName.trim().isEmpty()) return;
 
