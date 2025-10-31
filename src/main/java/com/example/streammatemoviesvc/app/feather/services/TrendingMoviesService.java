@@ -231,5 +231,6 @@ public class TrendingMoviesService {
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     public void removeTrendingMovies() {
         trendingMoviesRepository.deleteAll();
+        trendingMoviesRepository.flush(); // иначе се изпълнява чак при commit:
     }
 }
