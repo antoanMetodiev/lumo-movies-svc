@@ -35,17 +35,19 @@ public class TrendingMoviesService {
 
     private final TrendingMoviesRepository trendingMoviesRepository;
     private final MovieService movieService;
+    private final GenerateMoviesService generateMoviesService;
     private final MovieRepository movieRepository;
 
     @Autowired
     public TrendingMoviesService(HttpClient httpClient,
                                  TrendingMoviesRepository trendingMoviesRepository,
-                                 MovieService movieService,
+                                 MovieService movieService, GenerateMoviesService generateMoviesService,
                                  MovieRepository movieRepository) {
 
         this.httpClient = httpClient;
         this.trendingMoviesRepository = trendingMoviesRepository;
         this.movieService = movieService;
+        this.generateMoviesService = generateMoviesService;
         this.movieRepository = movieRepository;
     }
 
@@ -120,7 +122,7 @@ public class TrendingMoviesService {
         if (response.isPresent()) return;
 
         // Подаваме заявка за да се съхраняват и в главната база данни.
-        Thread.ofVirtual().start(() -> movieService.searchForMovies(movie.getTitle()));
+        Thread.ofVirtual().start(() -> generateMoviesService.searchForMovies(movie.getTitle()));
 
         try {
             Thread.sleep(10_000);

@@ -3,11 +3,13 @@ package com.example.streammatemoviesvc.app.feather.controllers;
 import com.example.streammatemoviesvc.app.feather.models.dtos.ActorLatestMovies;
 import com.example.streammatemoviesvc.app.feather.models.dtos.CinemaRecordResponse;
 import com.example.streammatemoviesvc.app.feather.models.entities.Movie;
+import com.example.streammatemoviesvc.app.feather.services.GenerateMoviesService;
 import com.example.streammatemoviesvc.app.feather.services.MovieService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -18,10 +20,22 @@ import java.util.List;
 public class MovieController {
 
     private final MovieService movieService;
+    private final GenerateMoviesService generateMoviesService;
 
     @Autowired
-    public MovieController(MovieService movieService) {
+    public MovieController(MovieService movieService, GenerateMoviesService generateMoviesService) {
         this.movieService = movieService;
+        this.generateMoviesService = generateMoviesService;
+    }
+
+    @PostMapping("/add-movies-by-actor/{imdb_id}")
+    public void addMoviesByActor(@PathVariable(name = "imdb_id") String imdb_id) {
+
+        try {
+            movieService.addMoviesByActor(imdb_id);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @GetMapping("/search-movies-matching-results/{searchTitle}")
@@ -58,7 +72,6 @@ public class MovieController {
         return movieService.getNextTwentyMoviesByGenre(receivedGenre, PageRequest.of(page, size));  // Предаваме жанра и Pageable на сървиса
     }
 
-
     @GetMapping("/get-movie-details")
     public Movie getConcreteMovieDetails(@RequestParam String movieId) {
         Movie movie = this.movieService.getConcreteMovieDetails(movieId);
@@ -85,7 +98,7 @@ public class MovieController {
     @PostMapping("/search-movies")
     public void searchMovies(@RequestBody String title) throws IOException, InterruptedException {
         System.out.println("====>>> Търся Филми...!!!");
-        this.movieService.searchForMovies(title);
+        generateMoviesService.searchForMovies(title);
     }
 
     @GetMapping("/get-all-movies-count")

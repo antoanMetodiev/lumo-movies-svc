@@ -52,6 +52,9 @@ dependencies {
     implementation 'org.springframework.retry:spring-retry:2.0.3'
 
 
+//    implementation 'org.hibernate.commons:hibernate-commons-annotations:6.0.6.Final'
+
+
     // Тестови зависимости
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
