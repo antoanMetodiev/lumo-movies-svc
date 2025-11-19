@@ -230,7 +230,9 @@ public class TrendingMoviesService {
         return trendingMoviesRepository.get6TrendingMovie();
     }
 
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
     public void removeTrendingMovies() {
         trendingMoviesRepository.deleteAll();
+        trendingMoviesRepository.flush(); // иначе се изпълнява чак при commit:
     }
 }
