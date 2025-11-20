@@ -54,8 +54,14 @@ public class TrendingMoviesService {
     @Transactional
     public void generateTrendingMovies() throws IOException, InterruptedException {
         removeTrendingMovies(); // this is first:
-        final String URL = TMDB_BASE_URL + "/3/trending/movie/day?api_key=" + TMDB_API_KEY;
 
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        final String URL = TMDB_BASE_URL + "/3/trending/movie/day?api_key=" + TMDB_API_KEY;
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(URL)).build();
         HttpResponse<String> response = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
@@ -234,5 +240,11 @@ public class TrendingMoviesService {
     public void removeTrendingMovies() {
         trendingMoviesRepository.deleteAll();
         trendingMoviesRepository.flush(); // иначе се изпълнява чак при commit:
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

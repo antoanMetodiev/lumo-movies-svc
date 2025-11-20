@@ -1,14 +1,10 @@
 package com.example.streammatemoviesvc.app.feather.services;
 
-import com.example.streammatemoviesvc.app.commonData.models.entities.Actor;
-import com.example.streammatemoviesvc.app.commonData.models.enums.ImageType;
 import com.example.streammatemoviesvc.app.commonData.repositories.ActorRepository;
-import com.example.streammatemoviesvc.app.commonData.utils.UtilMethods;
 import com.example.streammatemoviesvc.app.feather.models.dtos.ActorLatestMovies;
 import com.example.streammatemoviesvc.app.feather.models.dtos.CinemaRecordResponse;
 import com.example.streammatemoviesvc.app.feather.models.entities.Movie;
 import com.example.streammatemoviesvc.app.feather.models.entities.MovieComment;
-import com.example.streammatemoviesvc.app.feather.models.entities.MovieImage;
 import com.example.streammatemoviesvc.app.feather.repositories.MovieCommentRepository;
 import com.example.streammatemoviesvc.app.feather.repositories.MovieRepository;
 import com.google.gson.Gson;
@@ -21,26 +17,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 
 @Slf4j
 @Service
@@ -112,38 +102,34 @@ public class MovieService {
         }
 
         // === 3. Обработка на cast ===
-        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
 
-            for (JsonElement element : castMovies) {
-                JsonObject movie = element.getAsJsonObject();
+        for (JsonElement element : castMovies) {
+            JsonObject movie = element.getAsJsonObject();
 
-                int movieId = movie.get("id").getAsInt();
-                String title = movie.has("title") ? movie.get("title").getAsString()
-                        : movie.has("original_title") ? movie.get("original_title").getAsString()
-                        : "N/A";
+            int movieId = movie.get("id").getAsInt();
+            String title = movie.has("title") ? movie.get("title").getAsString()
+                    : movie.has("original_title") ? movie.get("original_title").getAsString()
+                    : "N/A";
 
-                String character = movie.has("character") ? movie.get("character").getAsString() : "";
-                System.out.println("Movie: " + title + " (" + movieId + ") as " + character);
+            String character = movie.has("character") ? movie.get("character").getAsString() : "";
+            System.out.println("Movie: " + title + " (" + movieId + ") as " + character);
 
-                executor.submit(() -> {
-                    try {
-                        // 1. Взимам точния филм:
-                        String movieUrl = TMDB_BASE_URL + "/3/movie/" + movieId + "?api_key=" + TMDB_API_KEY;
+            try {
+                // 1. Взимам точния филм:
+                String movieUrl = TMDB_BASE_URL + "/3/movie/" + movieId + "?api_key=" + TMDB_API_KEY;
 
-                        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(movieUrl)).build();
-                        HttpResponse<String> response = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpRequest request = HttpRequest.newBuilder().uri(URI.create(movieUrl)).build();
+                HttpResponse<String> response = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-                        transactionTemplate.execute(status -> {
-                            generateMoviesService.processMovies(response);
-                            return null; // TransactionTemplate изисква връщане на резултат
-                        });
-
-                    } catch (Exception exception) {
-                        exception.printStackTrace();
-                    }
+                transactionTemplate.execute(status -> {
+                    generateMoviesService.processMovies(response);
+                    return null;
                 });
+
+            } catch (Exception exception) {
+                exception.printStackTrace();
             }
-        } // <- тук executor-ът чака всички изпълнения преди да затвори
+        }
     }
 
     public Page<CinemaRecordResponse> getEveryThirtyMovies(Pageable pageable) {
