@@ -40,6 +40,9 @@ public class Movie extends CinemaRecord {
     @Column(name = "video_url", nullable = false, unique = true)
     private String videoURL;
 
+    @Column(name = "player_2_url")
+    private String player2URL;
+
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<MovieImage> imagesList = new ArrayList<>();

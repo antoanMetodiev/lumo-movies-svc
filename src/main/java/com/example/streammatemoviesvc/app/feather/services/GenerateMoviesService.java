@@ -12,6 +12,10 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -29,13 +33,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 @Service
 public class GenerateMoviesService {
     private final String TMDB_API_KEY = System.getenv("TMDB_API_KEY");
     private final String TMDB_BASE_URL = System.getenv("TMDB_BASE_URL");
+    private final String PLAYER_2_BASE_URL = System.getenv("PLAYER-2_BASE_URL");
 
     private final HttpClient httpClient;
     private final ActorRepository actorRepository;
@@ -44,6 +48,140 @@ public class GenerateMoviesService {
 
     private final TransactionTemplate transactionTemplate;
     private final Executor asyncExecutor;
+
+    // Code Executing:
+    public void addSpecialPlayerToMovie() {
+        // 1. Зареждам ПО 10 ФИЛМА:
+        List<Movie> movies = movieRepository.find10MoviesWithoutPlayer2URL();
+
+        while (!movies.isEmpty()) {
+            for (Movie currentMovie : movies) {
+
+                try {
+                    final String movieTitle = currentMovie.getTitle();
+
+                    String encodedMovieTitle = URLEncoder.encode(movieTitle, StandardCharsets.UTF_8);
+                    String searchQuery = PLAYER_2_BASE_URL + encodedMovieTitle;
+
+                    HttpRequest request = HttpRequest.newBuilder().uri(URI.create(searchQuery)).GET().build();
+                    HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+                    Document doc = Jsoup.parse(response.body());
+                    Elements movieLinks = doc.select(".movies-container .movie-item a");
+
+                    boolean currentMovieIsNotFound = true;
+                    for (Element link : movieLinks) {
+                        String href = link.attr("href");
+                        String extractedYear = link.select(".date").text();
+                        String year = "" + LocalDate.parse(currentMovie.getReleaseDate()).getYear();
+
+                        // Check 1:
+                        if (!isOnCorrectPage(href, movieTitle, extractedYear, year)) continue;
+                        currentMovieIsNotFound = false; // Вече е намерен!
+
+                        // Check 2:
+                        String player2 = hasPlayer2(href);
+
+                        if (player2.isEmpty()) {
+                            currentMovie.setPlayer2URL("NOT FOUND!");
+                        } else {
+                            // Ако съм го намерил - сетваме url-a и прекъсваме for цикъла:
+                            // save to movie "player-2" prop:
+                            currentMovie.setPlayer2URL(player2);
+                        }
+
+                        movieRepository.save(currentMovie);
+                        break;
+                    }
+
+                    // АКО ВЪОБЩЕ НЕ Е ВЛИЗАЛО ВЪВ for ЦИКЪЛА - НЕ СА МИ ВЪРНАТИ "а" тагове
+                    if (currentMovieIsNotFound) {
+                        currentMovie.setPlayer2URL("NOT FOUND!");
+                        movieRepository.save(currentMovie);
+                    }
+
+                } catch (Exception exception) {
+                    exception.printStackTrace();
+                }
+            }
+
+            // Почивка 1 секунда:
+            try {
+                Thread.sleep(1000);
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
+
+            movies = movieRepository.find10MoviesWithoutPlayer2URL();
+        }
+    }
+
+    private boolean isOnCorrectPage(String url, String movieTitle, String extractedYear, String year) {
+
+        try {
+            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).GET().build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            Document doc = Jsoup.parse(response.body());
+            Element h6 = doc.selectFirst(".details .show_only_desktop h6");
+
+            if (h6 == null) {
+                System.out.println("❌ Няма h6 елемент – не е movie page");
+                return false;
+            }
+
+            String originalTitle = h6.text().trim();
+
+            if (originalTitle.equalsIgnoreCase(movieTitle) && extractedYear.equalsIgnoreCase(year)) {
+
+                System.out.println("✅ На точната страница сме: " + originalTitle);
+                return true;
+            } else {
+                System.out.println("❌ Грешна страница. Очаквах: " + movieTitle + ", намерих: " + originalTitle);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    private String hasPlayer2(String url) {
+
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response =
+                    httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            Document doc = Jsoup.parse(response.body());
+
+            // Търсим всички бутони
+            Elements buttons = doc.select(".player_wrap .players button");
+
+            for (Element button : buttons) {
+                String dataUrl = button.attr("data-url").trim();
+
+                // Проверка за Player 2 и дали data-url започва с "https://streamvid"
+                if ("2".equals(button.attr("data-player")) && dataUrl.startsWith("https://streamvid")) {
+                    System.out.println("✅ Намерен Player 2: " + dataUrl);
+                    return dataUrl; // приключваме, след като намерим
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("❌ Player 2 с подходящ data-url не е намерен.");
+        return "";
+    }
+
+    // ----------------------------------------------------------------------------
 
     @Autowired
     public GenerateMoviesService(HttpClient httpClient,
@@ -59,6 +197,7 @@ public class GenerateMoviesService {
         this.movieCommentRepository = movieCommentRepository;
         this.transactionTemplate = transactionTemplate;
         this.asyncExecutor = asyncExecutor;
+        addSpecialPlayerToMovie();
     }
 
     // Нека създава нова транзакция, а не да взима съществуващата:

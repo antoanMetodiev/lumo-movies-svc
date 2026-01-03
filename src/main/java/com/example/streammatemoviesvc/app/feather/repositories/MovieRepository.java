@@ -60,4 +60,9 @@ public interface MovieRepository extends JpaRepository<Movie, UUID> {
 
     @Query(value = "SELECT id, title, poster_img_url, release_date, video_url FROM movies WHERE title ILIKE CONCAT('%', :searchTitle, '%') LIMIT 5", nativeQuery = true)
     List<Object[]> searchMoviesMatchingResults(@Param("searchTitle") String searchTitle);
+
+    @Query(value = "SELECT * FROM movies\n" +
+            "WHERE player_2_url IS NULL\n" +
+            "LIMIT 10;", nativeQuery = true)
+    List<Movie> find10MoviesWithoutPlayer2URL();
 }
