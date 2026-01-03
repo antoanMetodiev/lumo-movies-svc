@@ -197,7 +197,7 @@ public class GenerateMoviesService {
         this.movieCommentRepository = movieCommentRepository;
         this.transactionTemplate = transactionTemplate;
         this.asyncExecutor = asyncExecutor;
-        addSpecialPlayerToMovie();
+//        addSpecialPlayerToMovie();
     }
 
     // Нека създава нова транзакция, а не да взима съществуващата:
